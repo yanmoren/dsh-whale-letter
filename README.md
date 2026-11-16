@@ -1,5 +1,7 @@
 # 鲸鲸信箱 · dsh-whale-letter
 
+[![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/yanmoren/dsh-whale-letter)
+
 一个 DeepSeek Harness 插件。在独立页面寄一封信，**2 到 8 小时后**桌面弹提醒，点开是一个信封；拆开后是带纸张纤维、手写字体与墨迹微晕的长信。回信由**插件自带的本地 4B 模型**生成，全程离线，不需要 Ollama、Python、额外运行时，也不联网。
 
 ## 需求对照
@@ -44,6 +46,15 @@ python scripts/fetch_runtime.py
 脚本会下载 `Qwen3-4B-Q4_K_M.gguf`（2.33 GiB，Apache-2.0）与 llama.cpp CPU 二进制（42 MB）到 `lib/runtime/`。全部来自公开源，不需账号。
 
 不想用 Python 也行——直接用浏览器下载后放进 `lib/runtime/` 即可，目录结构见 `LICENSES.md`。若始终缺模型，插件会降级为素材库生成回信，功能不中断，只是文笔变模板化。
+
+### 预构建包（省去源码构建）
+
+Release 上挂了预构建 tarball（不含模型，模型仍需 `fetch_runtime.py` 补下）：
+
+```bash
+npm install -g https://github.com/yanmoren/dsh-whale-letter/releases/download/v1.0.0/dsh-whale-letter-1.0.0.tgz
+dsh plugin --profile web add dsh-whale-letter
+```
 
 ### 本地开发安装
 
