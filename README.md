@@ -23,11 +23,34 @@
 Windows，Node 22+（dsh 自带），dsh 0.1.x / 0.2.x 均可。项目路径含中文没问题，运行时脚本统一生成在 `~/.dsh/whale-letter/bin/`（纯 ASCII 路径）。
 
 ```bash
-# 推荐 link: 方式，不会把 2.33 GiB 模型复制到 C 盘
-dsh plugin --profile desktop add link:E:\临时文件\dsh-whale-letter
+# 从 GitHub 安装（会 clone 仓库）
+dsh plugin --profile web add github:yanmoren/dsh-whale-letter
+
+# DeepSeek Harness Desktop 桌面端用 desktop profile
+dsh plugin --profile desktop add github:yanmoren/dsh-whale-letter
 ```
 
-`desktop` 换成你实际使用的 profile（`web` / `chat` / 自定义）。装完**重启 dsh**。
+装完**重启 dsh**。
+
+### 补下运行环境（必做）
+
+GitHub 仓库**不含** 2.4 GB 的模型与 llama 二进制（GitHub 单文件上限 100 MB），安装后先补一次：
+
+```bash
+cd <插件安装目录>
+python scripts/fetch_runtime.py
+```
+
+脚本会下载 `Qwen3-4B-Q4_K_M.gguf`（2.33 GiB，Apache-2.0）与 llama.cpp CPU 二进制（42 MB）到 `lib/runtime/`。全部来自公开源，不需账号。
+
+不想用 Python 也行——直接用浏览器下载后放进 `lib/runtime/` 即可，目录结构见 `LICENSES.md`。若始终缺模型，插件会降级为素材库生成回信，功能不中断，只是文笔变模板化。
+
+### 本地开发安装
+
+```bash
+# link: 方式，不会把 2.4 GB 复制到 C 盘
+dsh plugin --profile desktop add link:E:\临时文件\dsh-whale-letter
+```
 
 dsh 命令不在 PATH 时，手动改 `~/.dsh/profiles/<profile>/package.json`：
 
@@ -38,18 +61,10 @@ dsh 命令不在 PATH 时，手动改 `~/.dsh/profiles/<profile>/package.json`�
 }
 ```
 
-GitHub 仓库不含 2.4 GB 的模型与运行时（单文件超过 GitHub 100 MB 上限）。用仓库安装后先跑一次：
-
-```bash
-python scripts/fetch_runtime.py
-```
-
-本地交付目录已含全套，可跳过。
-
 装好后：
 
 - 独立寄信页：`http://127.0.0.1:3080/whale-letter/write`
-- dsh 页面右下角有「✉ 鲸鲸信箱」入口
+- dsh 页面右下角有「B SIDE · 鲸鲸信箱」入口
 - 设置页多出「鲸鲸信箱」面板（状态、入口、快速验收）
 - 拆信页：`http://127.0.0.1:3080/whale-letter/read?latest=1`
 
@@ -86,7 +101,7 @@ python scripts/fetch_runtime.py
 ## 验收
 
 ```bash
-cd E:\临时文件\dsh-whale-letter
+cd <插件目录>
 node test/smoke.mjs          # 纯函数契约 + 硬约束 + 产物自检（43 项）
 node test/host-smoke.mjs     # mock host 走真实 HTTP 路由与队列（18 项）
 node test/infer-probe.mjs    # 真实跑一次本地 4B 模型（约 8 秒）
@@ -137,4 +152,4 @@ test/                         契约测试与推理探针
 
 ## 许可
 
-见 `LICENSES.md`。字体 SIL OFL 1.1，模型 Apache-2.0，llama.cpp MIT。
+插件自身代码 MIT（见 `LICENSE`）。随包第三方组件各自授权：字体 SIL OFL 1.1，模型 Apache-2.0，llama.cpp MIT，清单见 `LICENSES.md`。

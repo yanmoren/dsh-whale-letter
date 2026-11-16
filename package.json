@@ -16,6 +16,7 @@
     "test",
     "cordis.patch.yml",
     "README.md",
+    "LICENSE",
     "LICENSES.md",
     "preview.html",
     "preview.png",
@@ -27,6 +28,13 @@
   },
   "engines": { "node": ">=22" },
   "license": "MIT",
+  "author": "yanmoren",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanmoren/dsh-whale-letter.git"
+  },
+  "homepage": "https://github.com/yanmoren/dsh-whale-letter",
+  "bugs": { "url": "https://github.com/yanmoren/dsh-whale-letter/issues" },
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
