@@ -24,9 +24,9 @@
 | **DSH Plugin Radar**（兼容性记录库，每日 02:00 全量扫描 topic） | https://github.com/AdamPlatin123/dsh-plugin-radar/pull/1653 | ✅ 已提 PR；未登记也会被每日扫描自动收录 |
 | **dsh-hub.cc** | https://dsh-hub.cc/publish | ✅ 无需表单，按 `dsh-plugin` topic 定时自动同步 |
 | **awesome-dsh-plugin.com 目录**（dshplugin.dev / dsh-market 的数据源） | https://awesome-dsh-plugin.com/plugins.json | ✅ 自动，来自精选列表合并 |
-| **dsh.pub** | https://dsh.pub/en/submit/ | ⚠️ 需人工过一次 Cloudflare Turnstile，见下方步骤 |
-| **dshplugin.dev** | https://dshplugin.dev/submit | ⚠️ 需人工过一次 Cloudflare Turnstile，见下方步骤 |
-| **npm**（DSH 应用内插件市场的硬性前提） | https://www.npmjs.com/package/dsh-whale-letter | ⚠️ 待发布，见下方步骤 |
+| **dsh.pub** | https://github.com/dsh-pub/dsh-pub/pull/206 | ✅ 提交成功，后台自动建的 PR 已 MERGED |
+| **dshplugin.dev** | https://dshplugin.dev/submit | ✅ 提交成功（201），参考号 `sub_d0f3d5ce-869d-4139-8a41-315aa1b67a66`，待编辑审核 |
+| **npm**（DSH 应用内 Plugin Hub 入口） | https://www.npmjs.com/package/dsh-whale-letter | ⏸️ 2026-11-16 用户决定跳过，见下方说明 |
 
 ## 各渠道要点
 
@@ -91,7 +91,15 @@ tarball: https://github.com/yanmoren/dsh-whale-letter/releases/download/v1.0.0/d
 4. 填一个能收信的邮箱
 5. 完成 Turnstile → 「Send for editorial review」
 
-### npm（进 DSH 应用内插件市场）
+### npm（已按用户决定跳过）
+
+2026-11-16 用户决定跳过 npm 发布。当前状态：
+
+- npm 账号 `yanmoren`（绑定 `15724920903@163.com`）已注册成功，但 npm 要求邮箱 OTP 才能登录；两个可用邮箱（QQ / 163）的网页登录都要求手机短信二次验证，临时邮箱域名被 npm 拒绝（"Account creation denied"），IMAP 又需要授权码。因此无法在本机 autonomous 完成登录取 token。
+- 仓库内的 `package.json`、`npm pack --dry-run` 校验与 `.github/workflows/publish-npm.yml` 均已就绪，随时可发：只需在 npmjs.com 用你自己的账号创建 Automation Token，设为仓库 secret `NPM_TOKEN`，然后 Actions 手动跑 `Publish to npm`（或推 `v*` tag）。
+- README 已改为不依赖 npm registry 的安装方式（`github:` 或预构建 tarball + `link:`）。
+
+以下保留原发布步骤备查。
 
 DSH 应用内的 Plugin Hub 只收录能「一条 npm 命令装上」的插件，所以要进应用内市场必须发 npm。仓库不含 2.4 GB 运行时（GitHub 单文件上限 100 MB），npm 包里也没有——装完跑一次 `scripts/fetch_runtime.py` 补齐即可。
 

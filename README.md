@@ -49,12 +49,13 @@ python scripts/fetch_runtime.py
 
 ### 预构建包（省去源码构建）
 
-Release 上挂了预构建 tarball（不含模型，模型仍需 `fetch_runtime.py` 补下）：
+Release 上挂了预构建 tarball（不含模型，模型仍需 `fetch_runtime.py` 补下）。下载解压后直接用本地目录安装：
 
 ```bash
-npm install -g https://github.com/yanmoren/dsh-whale-letter/releases/download/v1.0.0/dsh-whale-letter-1.0.0.tgz
-dsh plugin --profile web add dsh-whale-letter
+dsh plugin --profile web add link:<解压后的目录>
 ```
+
+本插件未发布到 npm registry，请优先用上面的 `github:` 命令安装。
 
 ### 本地开发安装
 
