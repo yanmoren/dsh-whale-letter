@@ -1,6 +1,6 @@
-/* 鲸鲸信箱 · BSide 式信箱界面
-   深色炭黑浮层 + 黄昏窗景（纯 CSS 光影）+ 左侧信件列表 + 右侧信纸扫描件。
-   纤维来自 SVG feTurbulence，墨晕来自 SVG filter + 双层文字，无外部图片。 */
+/* 鲸鲸信箱 · BSide: Olivia Lin 收发信界面复刻
+   深色半透明窗口 + 中央米白信纸（花纹边框）+ 左侧窄信件列表。
+   写信纸=纯白普通字+右上邮票邮戳；收信纸=米白+细花纹边框+清晰手写体+圆形印章。 */
 
 @font-face {
   font-family: 'WhaleHand';
@@ -21,10 +21,10 @@
   --txt-2: #a5a39e;
   --txt-3: #74736f;
   --warm: #d9a16e;
-  --paper: #d8c39a;
-  --paper-2: #c6ac7f;
-  --ink: #1f2d3f;
-  --hand: 'LongCang', 'WhaleHand', 'Kaiti SC', cursive;
+  --paper: #fbfaf6;
+  --paper-2: #f2eee2;
+  --ink: #1a1c20;
+  --hand: 'WhaleHand', 'Kaiti SC', 'STKaiti', 'LongCang', cursive;
 }
 
 * { box-sizing: border-box; }
@@ -203,38 +203,50 @@ button:disabled { opacity: .42; cursor: default; }
 
 /* ---------- 信纸：深色窗口里的一张扫描件 ---------- */
 .paper {
-  position: absolute; z-index: 2; width: min(520px, 100%); height: min(600px, 100%);
-  transform: scale(.84) rotate(-.5deg); opacity: 0; pointer-events: none;
-  background:
-    linear-gradient(102deg, rgba(255, 255, 255, .18), transparent 42%),
-    radial-gradient(ellipse at 18% 12%, rgba(255, 246, 220, .5), transparent 55%),
-    radial-gradient(ellipse at 88% 92%, rgba(110, 78, 44, .3), transparent 62%),
-    linear-gradient(180deg, var(--paper), var(--paper-2));
+  position: absolute; z-index: 2; width: min(560px, 100%); height: min(620px, 100%);
+  transform: scale(.84) rotate(-.35deg); opacity: 0; pointer-events: none;
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
   border-radius: 2px; overflow: hidden; isolation: isolate;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, .52), 0 0 0 1px rgba(120, 100, 70, .18);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .5), 0 0 0 1px rgba(60, 50, 35, .12);
   transition: transform .95s cubic-bezier(.2, .75, .25, 1), opacity .7s ease;
 }
+/* BSide 收信纸：细密回纹花边 */
 .paper::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.52'/%3E%3C/svg%3E");
-  background-size: 220px 220px; mix-blend-mode: multiply; opacity: .21;
+  content: ''; position: absolute; inset: 9px; z-index: 1; pointer-events: none;
+  border: 1px solid rgba(112, 96, 68, .42);
+  outline: 1px solid rgba(112, 96, 68, .22); outline-offset: 3px;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(112,96,68,.24) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(112,96,68,.24) 0 1px, transparent 1px 7px);
+  background-size: 100% 5px, 5px 100%; background-repeat: repeat-x, repeat-y;
+  background-position: 0 0, 0 0;
+  -webkit-mask: linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  padding: 5px;
 }
 .paper::after {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    radial-gradient(circle at 18% 26%, rgba(110, 78, 44, .09) 0 1px, transparent 2px),
-    radial-gradient(circle at 72% 64%, rgba(110, 78, 44, .07) 0 1.5px, transparent 2.5px),
-    radial-gradient(circle at 44% 82%, rgba(255, 250, 235, .16) 0 2px, transparent 3px);
-  background-size: 130px 110px, 190px 150px, 170px 140px;
-  mix-blend-mode: multiply; opacity: .6;
+  content: ''; position: absolute; inset: 9px; z-index: 1; pointer-events: none;
+  border: 1px solid rgba(112, 96, 68, .35);
 }
-.crease { position: absolute; top: 0; bottom: 0; left: 8.5%; width: 14px; z-index: 1; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(92, 68, 40, .17) 42%, rgba(255, 252, 235, .3) 58%, transparent); }
-.crease-h { position: absolute; left: 0; right: 0; top: 46%; height: 13px; z-index: 1; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(92, 68, 40, .15) 44%, rgba(255, 252, 235, .28) 60%, transparent); }
-.paper-edge { position: absolute; inset: 0; z-index: 1; pointer-events: none; box-shadow: inset 0 0 34px rgba(132, 112, 72, .2), inset 0 0 3px rgba(255, 255, 255, .7); border: 1px solid rgba(150, 130, 92, .22); }
-.stamp { position: absolute; z-index: 8; right: 12px; top: 10px; width: 34px; height: 40px; border: 1px dashed rgba(92, 80, 60, .45); background: rgba(255, 248, 228, .35); }
-.stamp::after { content: ''; position: absolute; inset: 4px; background: radial-gradient(circle at 40% 35%, rgba(150, 170, 180, .5), rgba(110, 130, 145, .28)); }
-.postmark { position: absolute; z-index: 8; right: 52px; top: 16px; width: 34px; height: 34px; border: 1px solid rgba(70, 90, 110, .3); border-radius: 50%; transform: rotate(-18deg); }
-.postmark::after { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(70, 90, 110, .2); border-radius: 50%; }
+/* 折痕已按原版去掉 */
+.crease, .crease-h { display: none; }
+.paper-edge { display: none; }
+/* 写信纸：右上照片邮票 + 波浪邮戳 */
+.stamp { position: absolute; z-index: 8; right: 26px; top: 24px; width: 62px; height: 74px; padding: 4px; background: #fff; border: 1px solid rgba(90,80,60,.3); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.stamp::after { content: ''; position: absolute; inset: 5px; background: linear-gradient(160deg, #cfd8dc, #9aa9b4 45%, #6c7c88); }
+.postmark { position: absolute; z-index: 9; right: 90px; top: 32px; width: 44px; height: 44px; border: 1.5px solid rgba(70, 90, 110, .42); border-radius: 50%; transform: rotate(-14deg); }
+.postmark::after { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(70, 90, 110, .3); border-radius: 50%; }
+/* 收信纸：右上圆形印章 */
+.paper:not(.compose-paper) .stamp { display: none; }
+.paper:not(.compose-paper) .postmark {
+  right: 26px; top: 34px; width: 54px; height: 54px; border: 1.2px solid rgba(120, 70, 50, .18);
+  transform: rotate(-8deg); opacity: .75; pointer-events: none;
+}
+.paper:not(.compose-paper) .postmark::after {
+  content: '鲸'; display: flex; align-items: center; justify-content: center;
+  inset: 5px; border: 1px solid rgba(120, 70, 50, .16); border-radius: 50%;
+  font-family: 'WhaleHand', serif; font-size: 20px; color: rgba(120, 70, 50, .28);
+}
 .paper-inner { position: relative; z-index: 2; padding: 30px 34px 26px; height: 100%; overflow: hidden; }
 .paper-fade {
   position: absolute; left: 0; right: 0; bottom: 0; height: 48px; z-index: 3; pointer-events: none;
@@ -251,13 +263,12 @@ button:disabled { opacity: .42; cursor: default; }
 /* ---------- 手写墨迹 ---------- */
 .ink {
   font-family: var(--hand);
-  color: var(--ink); font-size: 16px; line-height: 2.05; letter-spacing: .045em;
-  text-shadow: 0 0 .3px rgba(28, 46, 76, .5), .12px .12px .55px rgba(36, 60, 96, .2);
-  filter: url(#inkBleed);
+  color: #14161a; font-size: 19px; line-height: 2.15; letter-spacing: .03em;
+  /* BSide 原版：手写体清晰，无晕染无位移 */
+  text-shadow: none;
 }
-.ink p { position: relative; margin: 0 0 1.1em; }
-.ink p::after { content: attr(data-text); position: absolute; inset: 0; color: rgba(36, 54, 84, .16); filter: blur(.7px); pointer-events: none; z-index: -1; }
-.ink p.sign-line { text-align: right; padding-right: 8%; font-family: 'WhaleHand', cursive; font-size: 21px; margin-top: .5em; }
+.ink p { position: relative; margin: 0 0 .9em; }
+.ink p.sign-line { text-align: right; padding-right: 8%; font-size: 21px; margin-top: .5em; }
 .ink-line { opacity: 0; transform: translateY(4px); animation: inkIn .95s ease forwards; }
 @keyframes inkIn { to { opacity: 1; transform: none; } }
 
@@ -280,13 +291,19 @@ button:disabled { opacity: .42; cursor: default; }
 /* ---------- 写信页 ---------- */
 .compose-paper { position: relative; flex: 1; min-height: 0; margin-top: 16px; transform: none; opacity: 1; pointer-events: auto; width: min(560px, 100%); height: auto; align-self: center; }
 .compose-paper .paper-inner { display: flex; flex-direction: column; }
-.compose-label { font-family: 'WhaleHand', cursive; font-size: 15px; color: rgba(43, 58, 74, .66); margin: 0 0 8px; }
+/* 写信纸：BSide 原版——黑色普通字，白纸，无手写体无晕染 */
+.compose-paper { background: #fffdf8; }
+.compose-paper::before { display: none; }
+.compose-paper::after { display: none; }
+.compose-paper .paper-inner { padding: 40px 46px; }
+.compose-label { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 14px; color: #2a2d33; margin: 0 0 14px; }
 textarea.note {
-  flex: 1; width: 100%; min-height: 220px; resize: none; border: 0; outline: 0; background: transparent;
-  font-family: var(--hand); font-size: 16px; line-height: 2.05; letter-spacing: .045em;
-  color: var(--ink); text-shadow: 0 0 .3px rgba(28, 46, 76, .5);
+  flex: 1; width: 100%; min-height: 260px; resize: none; border: 0; outline: 0; background: transparent;
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif; font-size: 15px; line-height: 2;
+  color: #1a1c20; text-shadow: none;
 }
-textarea.note::placeholder { color: rgba(66, 84, 112, .36); }
+textarea.note::placeholder { color: rgba(30, 34, 40, .35); }
+.compose-paper .paper-date { color: rgba(30, 34, 40, .5); }
 .compose-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; flex: none; }
 .notice { margin-top: 10px; padding: 9px 12px; border-radius: 5px; font-size: 11.5px; line-height: 1.7; background: rgba(217, 161, 110, .11); border: 1px solid rgba(217, 161, 110, .26); color: #e4cdb4; flex: none; }
 .notice.err { background: rgba(196, 84, 74, .12); border-color: rgba(196, 84, 74, .3); color: #f0c6c0; }
@@ -323,3 +340,8 @@ textarea.note::placeholder { color: rgba(66, 84, 112, .36); }
   .reader-meta h2 { max-width: 200px; }
   .paper { width: min(520px, 96%); }
 }
+
+/* ---------- 写信页极简：无侧栏，输入框全宽居中 ---------- */
+.win-body.single { grid-template-columns: minmax(0, 1fr); }
+.win-body.single .reader { padding: 26px clamp(20px, 5vw, 64px) 20px; }
+.win-body.single .compose-paper { width: min(720px, 100%); }

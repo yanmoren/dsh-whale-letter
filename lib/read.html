@@ -8,16 +8,6 @@
 </head>
 <body data-page="read">
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="inkBleed" x="-4%" y="-4%" width="108%" height="108%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise"/>
-    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.28" xChannelSelector="R" yChannelSelector="G" result="rough"/>
-    <feGaussianBlur in="rough" stdDeviation="0.45" result="bleed"/>
-    <feComponentTransfer in="bleed" result="faint"><feFuncA type="linear" slope="0.32"/></feComponentTransfer>
-    <feMerge><feMergeNode in="faint"/><feMergeNode in="rough"/></feMerge>
-  </filter>
-</svg>
-
 <div class="ambient"><span class="amb-glow g1"></span><span class="amb-glow g2"></span><span class="amb-glow g3"></span></div>
 
 <div class="window">
@@ -69,7 +59,7 @@
         </div>
 
         <div class="paper" id="paper">
-          <div class="crease"></div><div class="crease-h"></div><div class="paper-edge"></div>
+          <div class="stamp"></div><div class="postmark"></div>
           <div class="paper-inner">
             <div class="paper-date" id="paperDate"></div>
             <div class="ink" id="ink"></div>
