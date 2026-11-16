@@ -20,10 +20,13 @@
 | 渠道 | 入口 | 状态 |
 | --- | --- | --- |
 | **DSH Plugin Hub**（dsh-plugin.org 背后的仓库） | https://github.com/dshplugin/dsh-plugin-hub/issues/799 | ✅ 已开 issue，待人工评审 |
-| **awesome-dsh-plugin 精选列表**（2.4 万 star，每日抓 topic） | https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15736 | ✅ 已提 PR，待 CI + 人工评审 |
+| **awesome-dsh-plugin 精选列表**（2.4 万 star，每日抓 topic） | https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15736 | ✅ 已提 PR，CI 只差「仓库满 1 天」门槛，约 11-17 上午自动变绿 |
+| **DSH Plugin Radar**（兼容性记录库，每日 02:00 全量扫描 topic） | https://github.com/AdamPlatin123/dsh-plugin-radar/pull/1653 | ✅ 已提 PR；未登记也会被每日扫描自动收录 |
 | **dsh-hub.cc** | https://dsh-hub.cc/publish | ✅ 无需表单，按 `dsh-plugin` topic 定时自动同步 |
+| **awesome-dsh-plugin.com 目录**（dshplugin.dev / dsh-market 的数据源） | https://awesome-dsh-plugin.com/plugins.json | ✅ 自动，来自精选列表合并 |
 | **dsh.pub** | https://dsh.pub/en/submit/ | ⚠️ 需人工过一次 Cloudflare Turnstile，见下方步骤 |
-| **npm**（DSH 应用内插件市场的硬性前提） | https://www.npmjs.com/package/dsh-whale-letter | ⚠️ 待本机 `npm login` 后发布 |
+| **dshplugin.dev** | https://dshplugin.dev/submit | ⚠️ 需人工过一次 Cloudflare Turnstile，见下方步骤 |
+| **npm**（DSH 应用内插件市场的硬性前提） | https://www.npmjs.com/package/dsh-whale-letter | ⚠️ 待发布，见下方步骤 |
 
 ## 各渠道要点
 
@@ -57,6 +60,16 @@ tarball: https://github.com/yanmoren/dsh-whale-letter/releases/download/v1.0.0/d
 - **仓库年龄 ≥ 1 天**。本仓库建于 2026-11-16，`pr-gate.yml` 会报「太新」，但它每 6 小时（`regate.yml`，cron `19 */6 * * *`）自动重跑一次，**到点会自己变绿**，不需要重新提交、推空提交或关掉重开。
 - **描述必须属实**，评审会拿描述逐句对源码核。条目里提到的 2~8 小时延迟、牛皮信纸、手写体、错字涂改、换纸分页、随包本地 4B 模型、队列文件路径，都与实现一一对应。
 
+### DSH Plugin Radar（登记清单渠道）
+
+条目加在 `PLUGINS.md` 的「🔌 单插件」表末尾：
+
+```
+| dsh-whale-letter | [yanmoren/dsh-whale-letter](...) | 鲸鲸信箱：...；npm `dsh-whale-letter` | 待测 |
+```
+
+该站每天 02:00 全量扫描 `dsh-plugin` topic，即使不登记也会自动收录；这个 PR 只是让收录更早。
+
 ### dsh.pub（需人机验证）
 
 `POST /api/submissions` 带 Cloudflare Turnstile token，人机验证必须真人过。步骤：
@@ -68,15 +81,37 @@ tarball: https://github.com/yanmoren/dsh-whale-letter/releases/download/v1.0.0/d
 
 它会在后台自动向 `dsh-pub/dsh-pub` 仓库建 PR，并在页面上给出 PR 链接。
 
+### dshplugin.dev（需人机验证）
+
+站内表单，字段 `repositoryUrl` / `description` / `keywords` / `contactEmail` / `companyWebsite` / `note`，同样带 Cloudflare Turnstile（sitekey `0x4AAAAAAEVu7fOt3oSUq1vf`）。步骤：
+
+1. 打开 https://dshplugin.dev/submit
+2. 填仓库地址 `https://github.com/yanmoren/dsh-whale-letter`
+3. 描述可用 `submission-hub.md` 里的「One-line value」
+4. 填一个能收信的邮箱
+5. 完成 Turnstile → 「Send for editorial review」
+
 ### npm（进 DSH 应用内插件市场）
 
 DSH 应用内的 Plugin Hub 只收录能「一条 npm 命令装上」的插件，所以要进应用内市场必须发 npm。仓库不含 2.4 GB 运行时（GitHub 单文件上限 100 MB），npm 包里也没有——装完跑一次 `scripts/fetch_runtime.py` 补齐即可。
 
+两条路都行：
+
+**A. 本机直接发**（需要你自己的 npm 账号）
+
 ```bash
 npm login          # 需要你自己的 npm 账号
 cd <仓库目录>
-npm publish        # 包名 dsh-whale-letter@1.0.0，8.0 MB
+npm publish        # 包名 dsh-whale-letter@1.0.0，8.0 MB / 29 个文件
 ```
+
+**B. 走 GitHub Actions**（仓库已内置 `.github/workflows/publish-npm.yml`）
+
+1. npmjs.com → Access Tokens → Automation Token，勾 Read & Write
+2. 仓库 Settings → Secrets and variables → Actions → New repository secret，名字 `NPM_TOKEN`，值填那个 token
+3. Actions 页手动跑 `Publish to npm`，或推一个 `v*` tag 自动发
+
+工作流会先 `npm pack --dry-run` 检查包里没混进 `.gguf` / `.exe` / `.dll`，混进就直接中止；发布带 `--provenance`。
 
 发完把 README 里的安装命令改成 npm 版：
 
@@ -84,7 +119,7 @@ npm publish        # 包名 dsh-whale-letter@1.0.0，8.0 MB
 dsh plugin --profile web add dsh-whale-letter
 ```
 
-发 npm 后 `data/npm-map.json` 会被 `probe-npm.mjs` 自动补齐（它会核对包的 `repository` 字段指回本仓库），无需手动改。
+发 npm 后精选列表的 npm 映射会被 `probe-npm.mjs` 自动补齐（它会核对包的 `repository` 字段指回本仓库），无需手动改。
 
 ## 一次自查
 

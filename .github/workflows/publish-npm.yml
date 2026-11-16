@@ -1,0 +1,44 @@
+name: Publish to npm
+
+# 手动触发，或推送 v* tag 时自动发布。
+# 需要在仓库 Settings -> Secrets -> Actions 里加一个 NPM_TOKEN（npmjs.com ->
+# Access Tokens -> Automation token，勾选 Read & Write）。
+on:
+  workflow_dispatch:
+    inputs:
+      dist-tag:
+        description: 'npm dist-tag（默认 latest）'
+        required: false
+        default: latest
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 校验包内容不含运行时
+        run: |
+          set -euo pipefail
+          npm pack --dry-run > pack.log 2>&1
+          cat pack.log
+          if grep -qE 'runtime/.*\.(gguf|exe|dll)' pack.log; then
+            echo '::error::打包内容里混进了运行时文件，发布中止'
+            exit 1
+          fi
+
+      - name: 发布
+        run: npm publish --provenance --access public --tag "${{ inputs.dist-tag || 'latest' }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
