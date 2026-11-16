@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鲸鲸寄来的一封信</title>
+<link rel="stylesheet" href="/whale-letter/letter.css">
+</head>
+<body data-page="read">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="inkBleed" x="-4%" y="-4%" width="108%" height="108%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.28" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feGaussianBlur in="rough" stdDeviation="0.45" result="bleed"/>
+    <feComponentTransfer in="bleed" result="faint"><feFuncA type="linear" slope="0.32"/></feComponentTransfer>
+    <feMerge><feMergeNode in="faint"/><feMergeNode in="rough"/></feMerge>
+  </filter>
+</svg>
+
+<div class="ambient"><span class="amb-glow g1"></span><span class="amb-glow g2"></span><span class="amb-glow g3"></span></div>
+
+<div class="window">
+  <div class="win-bar">
+    <span class="win-brand">B SIDE · WHALE LETTER</span>
+    <div class="win-dots"><i></i><i></i><i></i></div>
+  </div>
+
+  <div class="win-body">
+    <aside class="sidebar">
+      <h1 class="side-title">信箱</h1>
+      <div class="side-section grow">
+        <div class="side-label">我的信箱 <sup id="unreadBadge">0</sup></div>
+        <div class="letter-list" id="letterList"><div class="empty">还没有信呢。</div></div>
+      </div>
+      <div class="side-compose">
+        <div class="compose-mark"></div>
+        <div class="compose-txt">给鲸鲸写信<small>信会在路上慢慢走</small></div>
+        <a class="btn-write" href="/whale-letter/write">写信</a>
+      </div>
+      <div class="side-foot">
+        <span id="runtimeTag">等信使醒来…</span>
+        <a href="#" id="instantLink">快速验收一封</a>
+      </div>
+    </aside>
+
+    <main class="reader">
+      <div class="reader-head">
+        <div class="reader-meta">
+          <span class="date" id="letterDate">—</span>
+          <h2 id="headSub">鲸鲸寄来的一封信</h2>
+        </div>
+        <div class="reader-actions">
+          <button class="btn-ghost-round" id="saveBtn">下载</button>
+          <button class="btn-light" id="keepBtn">收好这封信</button>
+        </div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="拆开信封">
+          <div class="env-back"></div>
+          <div class="env-front"></div>
+          <div class="env-fold-left"></div>
+          <div class="env-fold-right"></div>
+          <div class="stamp"></div><div class="postmark"></div>
+          <div class="env-to">给鱼片</div>
+          <div class="env-flap"></div>
+          <div class="wax">鲸</div>
+        </div>
+
+        <div class="paper" id="paper">
+          <div class="crease"></div><div class="crease-h"></div><div class="paper-edge"></div>
+          <div class="paper-inner">
+            <div class="paper-date" id="paperDate"></div>
+            <div class="ink" id="ink"></div>
+          </div>
+          <div class="page-corner"></div>
+        </div>
+      </div>
+
+      <div class="open-tip" id="openTip">轻点信封，把信拆开</div>
+      <div class="read-actions">
+        <button class="btn-ghost" id="prevPage">← 上一张</button>
+        <span class="page-nav"><span id="pageNum">1 / 1</span></span>
+        <button class="btn-ghost" id="nextPage">下一张 →</button>
+        <button class="btn-ghost" id="replayBtn">再拆一次</button>
+      </div>
+
+      <div class="pending hidden" id="pending">
+        <div class="big">信还在路上呢</div>
+        <div id="pendingText">鲸鲸还没把它送到，过一阵子再来看看吧。</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="win-foot"><span>LUNE · WHALE LETTER</span><span>慢慢来</span></div>
+</div>
+
+<script src="/whale-letter/letter.js"></script>
+</body>
+</html>

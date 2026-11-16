@@ -1,0 +1,37 @@
+{
+  "name": "dsh-whale-letter",
+  "version": "1.0.0",
+  "description": "鲸鲸信箱：dsh 插件，自带本地 4B 模型与 llama.cpp 运行环境，寄出的信 2~8 小时后桌面弹提醒，点开是带纸张纤维与手写墨晕的长信。",
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "local-llm", "letter", "whale"],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "scripts",
+    "test",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSES.md",
+    "preview.html",
+    "preview.png",
+    "preview-envelope.png"
+  ],
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "probe": "node test/infer-probe.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "license": "MIT",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "inject": ["@deepseek-ai/dsh-client-ui-settings"],
+      "platform": "web"
+    }
+  }
+}

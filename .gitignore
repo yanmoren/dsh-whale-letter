@@ -1,0 +1,8 @@
+# 2.4 GB 本地运行环境：由 scripts/fetch_runtime.py 装后补下
+lib/runtime/
+test/.tmp-*/
+**/__pycache__/
+*.pyc
+node_modules/
+*.log
+.DS_Store

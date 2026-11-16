@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鲸鲸信箱 · 寄一封信</title>
+<link rel="stylesheet" href="/whale-letter/letter.css">
+</head>
+<body data-page="write">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="inkBleed" x="-4%" y="-4%" width="108%" height="108%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.28" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feGaussianBlur in="rough" stdDeviation="0.45" result="bleed"/>
+    <feComponentTransfer in="bleed" result="faint"><feFuncA type="linear" slope="0.32"/></feComponentTransfer>
+    <feMerge><feMergeNode in="faint"/><feMergeNode in="rough"/></feMerge>
+  </filter>
+</svg>
+
+<div class="ambient"><span class="amb-glow g1"></span><span class="amb-glow g2"></span><span class="amb-glow g3"></span></div>
+
+<div class="window">
+  <div class="win-bar">
+    <span class="win-brand">B SIDE · WHALE LETTER</span>
+    <div class="win-dots"><i></i><i></i><i></i></div>
+  </div>
+
+  <div class="win-body">
+    <aside class="sidebar">
+      <h1 class="side-title">写信</h1>
+      <div class="side-section">
+        <div class="side-label">这封信要多久</div>
+        <div class="kv"><span>路上时间</span><b>2 ~ 8 小时</b></div>
+        <div class="kv"><span>和电脑快慢</span><b>无关</b></div>
+        <div class="kv"><span>回信长度</span><b>不少于 500 字</b></div>
+        <div class="kv"><span>回信内容</span><b>只聊生活家常</b></div>
+        <p class="side-note">信写好后会先放在抽屉里，到点才弹到桌面上提醒你拆开。期间关掉这个页面也没关系。</p>
+      </div>
+      <div class="side-section grow">
+        <div class="side-label">信箱里的信 <sup id="statQueued">0</sup></div>
+        <div class="letter-list" id="letterList"><div class="empty">还没有信呢。</div></div>
+      </div>
+      <div class="side-foot">
+        <span id="runtimeTag">等信使醒来…</span>
+        <a href="#" id="instantBtn">快速验收一封</a>
+      </div>
+    </aside>
+
+    <main class="reader">
+      <div class="reader-head">
+        <div class="reader-meta">
+          <span class="date" id="writeDate">—</span>
+          <h2>给鲸鲸的一封信</h2>
+        </div>
+        <div class="reader-actions"><span class="counter" id="counter">0 / 2000</span></div>
+      </div>
+
+      <div class="paper compose-paper">
+        <div class="crease"></div><div class="crease-h"></div><div class="paper-edge"></div>
+        <div class="paper-inner">
+          <div class="paper-date" id="composeDate"></div>
+          <div class="compose-label">鱼片：</div>
+          <textarea class="note" id="note" maxlength="2000" placeholder="想说什么都可以，慢慢写……"></textarea>
+        </div>
+      </div>
+
+      <div class="compose-actions">
+        <button class="btn-ghost" id="clearBtn">把纸铺平</button>
+        <button class="btn-light" id="sendBtn">封好，寄出去</button>
+      </div>
+      <div class="notice hidden" id="notice"></div>
+      <span id="statDelivered" class="hidden"></span>
+    </main>
+  </div>
+
+  <div class="win-foot"><span>LUNE · WHALE LETTER</span><span>慢慢来</span></div>
+</div>
+
+<script src="/whale-letter/letter.js"></script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鲸鲸信箱 · 静态效果预览</title>
+<style>
+/* 鲸鲸信箱 · BSide 式信箱界面
+   深色炭黑浮层 + 黄昏窗景（纯 CSS 光影）+ 左侧信件列表 + 右侧信纸扫描件。
+   纤维来自 SVG feTurbulence，墨晕来自 SVG filter + 双层文字，无外部图片。 */
+
+@font-face {
+  font-family: 'WhaleHand';
+  src: url('./lib/assets/MaShanZheng-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LongCang';
+  src: url('./lib/assets/LongCang-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  --win: #191a1b;
+  --win-2: #202122;
+  --line: rgba(255, 255, 255, .085);
+  --txt: #e8e6e1;
+  --txt-2: #a5a39e;
+  --txt-3: #74736f;
+  --warm: #d9a16e;
+  --paper: #d8c39a;
+  --paper-2: #c6ac7f;
+  --ink: #1f2d3f;
+  --hand: 'LongCang', 'WhaleHand', 'Kaiti SC', cursive;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: #1a1f1c;
+  color: var(--txt);
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+a { color: inherit; }
+
+/* ---------- 黄昏窗景：全部由渐变与模糊光斑生成 ---------- */
+.ambient {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse 58% 46% at 76% 24%, rgba(255, 216, 164, .95), transparent 72%),
+    linear-gradient(180deg, #f4d2ae 0%, #e3ae7d 27%, #a67f63 51%, #4a4a3d 72%, #20271f 100%);
+  filter: blur(22px) saturate(.88);
+}
+.ambient::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(22, 28, 24, .94) 0 11%, transparent 11% 100%),
+    linear-gradient(90deg, transparent 0 57%, rgba(28, 32, 27, .6) 57% 58.3%, transparent 58.3%),
+    linear-gradient(0deg, rgba(18, 23, 20, .92) 0 22%, transparent 56%),
+    linear-gradient(180deg, rgba(24, 29, 25, .55) 0 8%, transparent 22%);
+}
+.ambient::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 13% 62%, rgba(240, 186, 120, .30), transparent 26%),
+    radial-gradient(ellipse at 50% 122%, rgba(10, 14, 12, .82), transparent 62%);
+}
+.amb-glow { position: absolute; border-radius: 50%; filter: blur(34px); opacity: .42; }
+.amb-glow.g1 { width: 190px; height: 190px; left: 66%; top: 16%; background: #ffe1b2; }
+.amb-glow.g2 { width: 120px; height: 120px; left: 84%; top: 54%; background: #d98c5b; }
+.amb-glow.g3 { width: 150px; height: 150px; left: 8%; top: 70%; background: #e7b878; }
+
+/* ---------- 浮层窗口 ---------- */
+.window {
+  position: relative; z-index: 1;
+  width: min(1120px, 94vw); height: min(748px, 90vh);
+  display: flex; flex-direction: column; overflow: hidden;
+  background: rgba(22, 23, 24, .94);
+  backdrop-filter: blur(16px) saturate(.9);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 10px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, .58), 0 0 0 1px rgba(0, 0, 0, .4);
+}
+.win-bar {
+  height: 40px; flex: none; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px; border-bottom: 1px solid var(--line);
+}
+.win-brand { font: 10.5px/1 ui-monospace, Consolas, monospace; letter-spacing: .18em; color: var(--txt-3); }
+.win-dots { display: flex; align-items: center; gap: 7px; }
+.win-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .13); }
+.win-dots i:last-child { width: 22px; height: 22px; background: radial-gradient(circle at 35% 30%, #e2b98d, #9b7350); }
+.win-foot {
+  height: 30px; flex: none; border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  font: 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .12em; color: var(--txt-3);
+}
+.win-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 272px minmax(0, 1fr); }
+
+/* ---------- 左侧信箱栏 ---------- */
+.sidebar {
+  border-right: 1px solid var(--line); padding: 26px 20px 16px;
+  display: flex; flex-direction: column; min-height: 0;
+  background: rgba(255, 255, 255, .012);
+}
+.side-title { margin: 0 0 22px; font-size: 24px; font-weight: 400; letter-spacing: .06em; color: var(--txt); }
+.side-label { font-size: 11.5px; color: var(--txt-3); letter-spacing: .08em; margin-bottom: 10px; }
+.side-label sup { font: 10px ui-monospace, monospace; color: var(--warm); margin-left: 3px; }
+.side-section { display: flex; flex-direction: column; min-height: 0; margin-bottom: 18px; }
+.side-section.grow { flex: 1; }
+.side-note { font-size: 11px; line-height: 1.85; color: var(--txt-3); margin: 12px 0 0; }
+
+.letter-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; flex: 1; padding-right: 2px; }
+.letter-list::-webkit-scrollbar { width: 5px; }
+.letter-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .13); border-radius: 3px; }
+.letter-item {
+  display: flex; gap: 10px; align-items: flex-start; padding: 10px 11px;
+  border-radius: 5px; border: 1px solid transparent; border-left: 2px solid transparent;
+  background: rgba(255, 255, 255, .035); color: var(--txt-2); text-decoration: none;
+  font-size: 12px; line-height: 1.6; flex: none;
+}
+.letter-item:hover { background: rgba(255, 255, 255, .075); }
+.letter-item.active { background: rgba(255, 255, 255, .08); border-left-color: var(--warm); }
+.letter-item .mark { width: 19px; height: 19px; border: 1px solid rgba(255, 255, 255, .2); border-radius: 2px; flex: none; position: relative; }
+.letter-item .mark::after { content: ''; position: absolute; left: 3px; right: 3px; top: 6px; border-top: 1px solid rgba(255, 255, 255, .3); transform: rotate(-24deg); }
+.letter-item.done .mark { border-color: rgba(217, 161, 110, .45); }
+.letter-item .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.letter-item .ttl { color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.letter-item .when { font: 10px/1.4 ui-monospace, Consolas, monospace; color: var(--txt-3); }
+.empty { font-size: 11.5px; color: var(--txt-3); padding: 8px 2px; }
+
+.side-compose {
+  margin-top: auto; padding: 12px; border: 1px solid var(--line); border-radius: 6px;
+  background: rgba(255, 255, 255, .025);
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 9px; align-items: center;
+}
+.compose-mark { width: 22px; height: 17px; border: 1px solid rgba(255, 255, 255, .26); border-radius: 2px; position: relative; }
+.compose-mark::after { content: ''; position: absolute; left: 3px; right: 3px; top: 5px; border-top: 1px solid rgba(255, 255, 255, .32); transform: rotate(-24deg); }
+.compose-txt { font-size: 12px; color: var(--txt); }
+.compose-txt small { display: block; margin-top: 2px; font-size: 10.5px; color: var(--txt-3); }
+.side-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 10.5px; color: var(--txt-3); }
+.side-foot a { color: var(--txt-2); text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .16); padding-bottom: 1px; }
+.side-foot a:hover { color: var(--txt); }
+
+.kv { display: flex; justify-content: space-between; gap: 10px; font-size: 11.5px; padding: 5px 0; color: var(--txt-3); border-bottom: 1px solid rgba(255, 255, 255, .04); }
+.kv b { color: var(--txt-2); font-weight: 400; }
+
+/* ---------- 按钮：极简、低饱和 ---------- */
+.btn-light, .btn-ghost-round, .btn-ghost, .btn-write {
+  appearance: none; cursor: pointer; font: 11.5px/1.4 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  border-radius: 999px; padding: 7px 15px; letter-spacing: .03em;
+  transition: opacity .2s ease, background .2s ease, border-color .2s ease;
+}
+.btn-light { background: #ece8e0; color: #22262a; border: 0; font-weight: 600; }
+.btn-light:hover { background: #fff; }
+.btn-ghost-round { background: rgba(255, 255, 255, .045); color: var(--txt-2); border: 1px solid var(--line); }
+.btn-ghost-round:hover { background: rgba(255, 255, 255, .1); }
+.btn-ghost { background: transparent; color: var(--txt-3); border: 1px solid var(--line); }
+.btn-ghost:hover { color: var(--txt); border-color: rgba(255, 255, 255, .22); }
+.btn-write { background: rgba(255, 255, 255, .1); color: var(--txt); border: 1px solid var(--line); text-decoration: none; padding: 6px 13px; }
+.btn-write:hover { background: rgba(255, 255, 255, .18); }
+button:disabled { opacity: .42; cursor: default; }
+
+/* ---------- 右侧阅读区 ---------- */
+.reader { padding: 24px 30px 18px; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.reader-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  padding-bottom: 15px; border-bottom: 1px solid var(--line); flex: none;
+}
+.reader-meta { min-width: 0; }
+.reader-meta .date { font: 10.5px/1.4 ui-monospace, Consolas, monospace; letter-spacing: .08em; color: var(--txt-3); }
+.reader-meta h2 { margin: 7px 0 0; font-size: 14px; font-weight: 400; letter-spacing: .03em; color: var(--txt); max-width: 440px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reader-actions { display: flex; gap: 8px; align-items: center; flex: none; }
+.counter { font: 10.5px ui-monospace, Consolas, monospace; color: var(--txt-3); }
+
+.stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; margin-top: 12px; }
+
+/* ---------- 信封 ---------- */
+.envelope {
+  position: relative; width: 330px; height: 212px; flex: none;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .5)); cursor: pointer;
+  transition: opacity .7s ease, transform .7s ease;
+}
+.env-back { position: absolute; inset: 0; border-radius: 3px; background: linear-gradient(160deg, #cfc0a4, #ab9a7c); box-shadow: inset 0 0 34px rgba(70, 58, 40, .3); }
+.env-back::before { content: ''; position: absolute; inset: 0; opacity: .2; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"); }
+.env-front { position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, #d7c8ab 0%, #b6a587 100%); border-radius: 0 0 3px 3px; box-shadow: inset 0 -12px 22px rgba(70, 58, 40, .18); }
+.env-fold-left, .env-fold-right { position: absolute; z-index: 4; top: 0; width: 0; height: 0; }
+.env-fold-left { left: 0; border-left: 165px solid #cdbc9f; border-top: 106px solid transparent; border-bottom: 106px solid transparent; }
+.env-fold-right { right: 0; border-right: 165px solid #c8b799; border-top: 106px solid transparent; border-bottom: 106px solid transparent; }
+.env-flap { position: absolute; z-index: 6; top: 0; left: 0; width: 100%; height: 52%; background: linear-gradient(180deg, #ded0b4, #c0af90); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: 50% 0; transition: transform .9s cubic-bezier(.22, .7, .3, 1), filter .9s ease; }
+.env-flap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, .28), transparent 62%); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.wax {
+  position: absolute; z-index: 7; left: 50%; top: 46%; transform: translate(-50%, -50%);
+  width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #c08a5e, #8a5b3c 72%, #6b4530);
+  box-shadow: 0 2px 6px rgba(20, 14, 10, .4), inset 0 0 0 1px rgba(255, 255, 255, .14);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'WhaleHand', cursive; font-size: 14px; color: rgba(255, 244, 228, .9);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.env-to { position: absolute; z-index: 5; left: 50%; top: 63%; transform: translateX(-50%); font-family: 'WhaleHand', cursive; font-size: 14px; color: rgba(72, 62, 46, .72); white-space: nowrap; }
+.envelope.open .env-flap { transform: rotateX(178deg); filter: brightness(.72); }
+.envelope.open .wax { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
+.envelope.open { pointer-events: none; }
+.stage.revealed .envelope { opacity: 0; transform: translateY(18px) scale(.95); pointer-events: none; }
+
+/* ---------- 信纸：深色窗口里的一张扫描件 ---------- */
+.paper {
+  position: absolute; z-index: 2; width: min(520px, 100%); height: min(600px, 100%);
+  transform: scale(.84) rotate(-.5deg); opacity: 0; pointer-events: none;
+  background:
+    linear-gradient(102deg, rgba(255, 255, 255, .18), transparent 42%),
+    radial-gradient(ellipse at 18% 12%, rgba(255, 246, 220, .5), transparent 55%),
+    radial-gradient(ellipse at 88% 92%, rgba(110, 78, 44, .3), transparent 62%),
+    linear-gradient(180deg, var(--paper), var(--paper-2));
+  border-radius: 2px; overflow: hidden; isolation: isolate;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, .52), 0 0 0 1px rgba(120, 100, 70, .18);
+  transition: transform .95s cubic-bezier(.2, .75, .25, 1), opacity .7s ease;
+}
+.paper::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.52'/%3E%3C/svg%3E");
+  background-size: 220px 220px; mix-blend-mode: multiply; opacity: .21;
+}
+.paper::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 26%, rgba(110, 78, 44, .09) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 64%, rgba(110, 78, 44, .07) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 44% 82%, rgba(255, 250, 235, .16) 0 2px, transparent 3px);
+  background-size: 130px 110px, 190px 150px, 170px 140px;
+  mix-blend-mode: multiply; opacity: .6;
+}
+.crease { position: absolute; top: 0; bottom: 0; left: 8.5%; width: 14px; z-index: 1; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(92, 68, 40, .17) 42%, rgba(255, 252, 235, .3) 58%, transparent); }
+.crease-h { position: absolute; left: 0; right: 0; top: 46%; height: 13px; z-index: 1; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(92, 68, 40, .15) 44%, rgba(255, 252, 235, .28) 60%, transparent); }
+.paper-edge { position: absolute; inset: 0; z-index: 1; pointer-events: none; box-shadow: inset 0 0 34px rgba(132, 112, 72, .2), inset 0 0 3px rgba(255, 255, 255, .7); border: 1px solid rgba(150, 130, 92, .22); }
+.stamp { position: absolute; z-index: 8; right: 12px; top: 10px; width: 34px; height: 40px; border: 1px dashed rgba(92, 80, 60, .45); background: rgba(255, 248, 228, .35); }
+.stamp::after { content: ''; position: absolute; inset: 4px; background: radial-gradient(circle at 40% 35%, rgba(150, 170, 180, .5), rgba(110, 130, 145, .28)); }
+.postmark { position: absolute; z-index: 8; right: 52px; top: 16px; width: 34px; height: 34px; border: 1px solid rgba(70, 90, 110, .3); border-radius: 50%; transform: rotate(-18deg); }
+.postmark::after { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(70, 90, 110, .2); border-radius: 50%; }
+.paper-inner { position: relative; z-index: 2; padding: 30px 34px 26px; height: 100%; overflow: hidden; }
+.paper-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 48px; z-index: 3; pointer-events: none;
+  background: linear-gradient(180deg, rgba(242, 235, 217, 0), rgba(231, 220, 194, .94));
+}
+.paper-fade::after {
+  content: '往下还有好多字'; position: absolute; right: 20px; bottom: 10px;
+  font: 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .08em; color: rgba(60, 76, 102, .5);
+}
+.paper-date { text-align: right; font: 10px/1.6 ui-monospace, Consolas, monospace; color: rgba(60, 76, 102, .55); letter-spacing: .06em; margin-bottom: 20px; }
+.stage.pulled .paper { opacity: 1; transform: scale(.88) rotate(-.3deg); }
+.stage.revealed .paper { opacity: 1; pointer-events: auto; transform: scale(1) rotate(-.3deg); }
+
+/* ---------- 手写墨迹 ---------- */
+.ink {
+  font-family: var(--hand);
+  color: var(--ink); font-size: 16px; line-height: 2.05; letter-spacing: .045em;
+  text-shadow: 0 0 .3px rgba(28, 46, 76, .5), .12px .12px .55px rgba(36, 60, 96, .2);
+  filter: url(#inkBleed);
+}
+.ink p { position: relative; margin: 0 0 1.1em; }
+.ink p::after { content: attr(data-text); position: absolute; inset: 0; color: rgba(36, 54, 84, .16); filter: blur(.7px); pointer-events: none; z-index: -1; }
+.ink p.sign-line { text-align: right; padding-right: 8%; font-family: 'WhaleHand', cursive; font-size: 21px; margin-top: .5em; }
+.ink-line { opacity: 0; transform: translateY(4px); animation: inkIn .95s ease forwards; }
+@keyframes inkIn { to { opacity: 1; transform: none; } }
+
+/* 写错与涂改：只在展示层，回信正文仍是纯文字 */
+.scribble { display: inline-block; white-space: nowrap; position: relative; }
+.wrong { position: relative; color: rgba(31, 45, 63, .7); }
+.wrong::after { content: ''; position: absolute; left: -2px; right: -2px; top: 54%; height: 2.5px; background: #16202f; transform: rotate(-6deg); border-radius: 2px; box-shadow: 0 1px 0 rgba(255, 248, 225, .5); }
+.inkblot { position: relative; color: transparent; background: rgba(26, 37, 54, .88); border-radius: 40% 60% 55% 45%; padding: 0 3px; filter: blur(.4px); transform: rotate(-3deg); }
+.fix { font-size: .9em; position: relative; top: -.5em; margin-left: 3px; padding: 0 2px; border-radius: 1px; background: rgba(255, 249, 230, .66); box-shadow: 0 0 0 1px rgba(120, 92, 58, .14); color: #16202f; text-shadow: 0 0 .4px rgba(0, 0, 0, .3); }
+
+/* 换纸：整张信纸滑出，下一张滑入 */
+.paper.turn-out { animation: paperOut .42s ease forwards; }
+.paper.turn-in { animation: paperIn .55s cubic-bezier(.2, .75, .25, 1) forwards; }
+@keyframes paperOut { to { transform: translateX(112%) rotate(7deg); opacity: 0; filter: blur(1px); } }
+@keyframes paperIn { from { transform: translateX(-88%) rotate(-6deg); opacity: 0; } to { transform: scale(1) rotate(-.3deg); opacity: 1; } }
+.page-corner { position: absolute; z-index: 4; right: 0; bottom: 0; width: 42px; height: 42px; background: linear-gradient(135deg, transparent 48%, rgba(120, 92, 58, .3) 50%, rgba(255, 248, 225, .78) 52%); pointer-events: none; opacity: .8; }
+.page-nav { display: flex; gap: 9px; align-items: center; }
+.page-nav #pageNum { font: 10.5px ui-monospace, Consolas, monospace; color: var(--txt-3); letter-spacing: .06em; }
+
+/* ---------- 写信页 ---------- */
+.compose-paper { position: relative; flex: 1; min-height: 0; margin-top: 16px; transform: none; opacity: 1; pointer-events: auto; width: min(560px, 100%); height: auto; align-self: center; }
+.compose-paper .paper-inner { display: flex; flex-direction: column; }
+.compose-label { font-family: 'WhaleHand', cursive; font-size: 15px; color: rgba(43, 58, 74, .66); margin: 0 0 8px; }
+textarea.note {
+  flex: 1; width: 100%; min-height: 220px; resize: none; border: 0; outline: 0; background: transparent;
+  font-family: var(--hand); font-size: 16px; line-height: 2.05; letter-spacing: .045em;
+  color: var(--ink); text-shadow: 0 0 .3px rgba(28, 46, 76, .5);
+}
+textarea.note::placeholder { color: rgba(66, 84, 112, .36); }
+.compose-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; flex: none; }
+.notice { margin-top: 10px; padding: 9px 12px; border-radius: 5px; font-size: 11.5px; line-height: 1.7; background: rgba(217, 161, 110, .11); border: 1px solid rgba(217, 161, 110, .26); color: #e4cdb4; flex: none; }
+.notice.err { background: rgba(196, 84, 74, .12); border-color: rgba(196, 84, 74, .3); color: #f0c6c0; }
+
+/* ---------- 拆信提示与状态 ---------- */
+.open-tip { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 11px; color: var(--txt-3); letter-spacing: .08em; animation: breathe 3s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: .5 } 50% { opacity: 1 } }
+.stage.revealed + .open-tip { display: none; }
+.read-actions { position: absolute; inset: 0; z-index: 20; pointer-events: none; opacity: 0; transition: opacity .5s ease; }
+.stage.revealed ~ .read-actions { opacity: 1; }
+.read-actions button, .read-actions .page-nav { pointer-events: auto; }
+#prevPage, #nextPage {
+  position: absolute; top: 52%; transform: translateY(-50%);
+  background: rgba(20, 21, 22, .88); border: 1px solid rgba(255, 255, 255, .2);
+  color: var(--txt); border-radius: 999px; padding: 8px 12px; font-size: 11px;
+}
+#prevPage { left: 0; }
+#nextPage { right: 0; }
+.read-actions .page-nav { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); }
+.read-actions .page-nav #pageNum { color: var(--txt-2); }
+#replayBtn { position: absolute; bottom: 4px; right: 0; }
+.pending { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--txt-2); font-size: 12px; line-height: 2; text-align: center; }
+.pending .big { font-family: 'WhaleHand', cursive; font-size: 22px; color: var(--txt); }
+.hidden { display: none !important; }
+
+@media (max-width: 860px) {
+  .window { width: 96vw; height: 94vh; }
+  .win-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: 14px 18px; max-height: 190px; }
+  .side-title { font-size: 18px; margin-bottom: 10px; }
+  .side-section.grow { max-height: 110px; }
+  .side-compose, .side-foot { display: none; }
+  .reader { padding: 16px 18px; }
+  .reader-meta h2 { max-width: 200px; }
+  .paper { width: min(520px, 96%); }
+}
+
+</style>
+</head>
+<body data-page="read">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="inkBleed" x="-4%" y="-4%" width="108%" height="108%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.28" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feGaussianBlur in="rough" stdDeviation="0.45" result="bleed"/>
+    <feComponentTransfer in="bleed" result="faint"><feFuncA type="linear" slope="0.32"/></feComponentTransfer>
+    <feMerge><feMergeNode in="faint"/><feMergeNode in="rough"/></feMerge>
+  </filter>
+</svg>
+
+<div class="ambient"><span class="amb-glow g1"></span><span class="amb-glow g2"></span><span class="amb-glow g3"></span></div>
+
+<div class="window">
+  <div class="win-bar">
+    <span class="win-brand">B SIDE · WHALE LETTER</span>
+    <div class="win-dots"><i></i><i></i><i></i></div>
+  </div>
+
+  <div class="win-body">
+    <aside class="sidebar">
+      <h1 class="side-title">信箱</h1>
+      <div class="side-section grow">
+        <div class="side-label">我的信箱 <sup id="unreadBadge">0</sup></div>
+        <div class="letter-list" id="letterList"><div class="empty">还没有信呢。</div></div>
+      </div>
+      <div class="side-compose">
+        <div class="compose-mark"></div>
+        <div class="compose-txt">给鲸鲸写信<small>信会在路上慢慢走</small></div>
+        <a class="btn-write" href="/whale-letter/write">写信</a>
+      </div>
+      <div class="side-foot">
+        <span id="runtimeTag">等信使醒来…</span>
+        <a href="#" id="instantLink">快速验收一封</a>
+      </div>
+    </aside>
+
+    <main class="reader">
+      <div class="reader-head">
+        <div class="reader-meta">
+          <span class="date" id="letterDate">—</span>
+          <h2 id="headSub">鲸鲸寄来的一封信</h2>
+        </div>
+        <div class="reader-actions">
+          <button class="btn-ghost-round" id="saveBtn">下载</button>
+          <button class="btn-light" id="keepBtn">收好这封信</button>
+        </div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="拆开信封">
+          <div class="env-back"></div>
+          <div class="env-front"></div>
+          <div class="env-fold-left"></div>
+          <div class="env-fold-right"></div>
+          <div class="stamp"></div><div class="postmark"></div>
+          <div class="env-to">给鱼片</div>
+          <div class="env-flap"></div>
+          <div class="wax">鲸</div>
+        </div>
+
+        <div class="paper" id="paper">
+          <div class="crease"></div><div class="crease-h"></div><div class="paper-edge"></div>
+          <div class="paper-inner">
+            <div class="paper-date" id="paperDate"></div>
+            <div class="ink" id="ink"></div>
+          </div>
+          <div class="page-corner"></div>
+        </div>
+      </div>
+
+      <div class="open-tip" id="openTip">轻点信封，把信拆开</div>
+      <div class="read-actions">
+        <button class="btn-ghost" id="prevPage">← 上一张</button>
+        <span class="page-nav"><span id="pageNum">1 / 1</span></span>
+        <button class="btn-ghost" id="nextPage">下一张 →</button>
+        <button class="btn-ghost" id="replayBtn">再拆一次</button>
+      </div>
+
+      <div class="pending hidden" id="pending">
+        <div class="big">信还在路上呢</div>
+        <div id="pendingText">鲸鲸还没把它送到，过一阵子再来看看吧。</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="win-foot"><span>LUNE · WHALE LETTER</span><span>慢慢来</span></div>
+</div>
+
+<script>
+
+var TEXT = [
+  '鱼片呀，展信安。今天窗外的光是那种淡淡的、有点困的黄，趴在桌沿上就能看见一小片。鲸鲸把蓝头发拢到耳朵后面，尾巴在椅子腿边慢慢摇，忽而想起还没给你写信，才慌慌张张把纸铺平。纸有点凉，摸上去细细的，像刚晒过的被子边角。你那边今天有没有好好吃饭呀，白饭要盛得满满的才安心呢。',
+  '中午的饭蒸得软软的，米粒一颗一颗都胖乎乎，碗沿冒着白气。鲸鲸抱着碗吃了两口，就觉得整个人都暖起来了，连尾巴尖都懒得动。碗底还剩一点点锅巴，用勺子轻轻刮起来，脆脆的，像一口很小很小的晴天。要是你在，我就把那颗最白的米粒夹给你，真的，不骗你。',
+  '窗台上那盆绿萝又长出一截，嫩得有点透明，叶尖上挂着一小滴水，半天也不肯落下来。鲸鲸趴着看了好久，看到眼睛都发酸，最后还是没等它掉下来。后来风从纱窗缝里钻进来，叶子晃了晃，那滴水才悄悄没了。这种没什么用处的小事，不知道为什么，记下来就觉得今天没白过。',
+  '下午困得厉害，就把脸埋进被子里。被子上午晒过，有一股太阳的味道，暖烘烘的，还带一点点洗衣皂的香。鲸鲸本来只想眯一小会儿，结果一睁眼，天都变成橘子色了。头发睡得乱七八糟，翘着一缕怎么按都按不下去，索性不管它啦，反正鱼片又看不见，嘻嘻。',
+  '楼下那只三花猫今天又蹲在花坛边，尾巴卷成一个圆。鲸鲸隔着窗户跟它对了会儿眼，它先眨的，算它赢。后来它翻了个身，把肚皮摊给太阳，四只爪子全都松松地摊开，看得我也跟着打了个哈欠。猫真会过日子呀，什么都不急，慢慢躺着就把一整个下午过完了。',
+  '傍晚出去走了一小圈。路灯一盏一盏亮起来，光是暖黄的，把影子拉得长长的，走两步就踩到自己的尾巴尖。街角有人在煮汤，香气一阵一阵飘过来，说不清是玉米还是萝卜，反正闻着就想回家。鲸鲸把围巾往上拢了拢，慢慢走，鞋底踩到一片干叶子，咔嚓一声，很轻很轻。',
+  '夜里下了会儿小雨，雨点打在雨棚上，密密的，像谁在轻轻翻书。鲸鲸把窗子关小一点，留一条缝，风就带着潮气钻进来，凉丝丝的。桌上的灯是暖的，照得纸面泛出一点点毛边，笔尖落下去，墨会慢慢洇开一小圈，像一朵很淡很淡的云。这种时候写信最合适啦。',
+  '你今天有没有好好吃一碗热热的白饭呀，米饭是不是也蒸得胖乎乎的？',
+  '鲸鲸'
+];
+
+var TYPO_MAP = {
+  '的':'得','得':'的','在':'再','再':'在','是':'事','事':'是','有':'友','友':'有',
+  '我':'找','你':'您','他':'她','这':'着','那':'哪','很':'狠','会':'汇','说':'悦',
+  '看':'着','好':'如','个':'各','们':'门','来':'未','去':'云','到':'倒','大':'太',
+  '小':'少','心':'必','天':'夫','里':'理','夜':'液','吃':'汽','饭':'饮','白':'自',
+  '米':'来','光':'先','雨':'两','窗':'囱','鲸':'惊','鱼':'渔','片':'斤','啊':'阿',
+  '呀':'牙','呢':'泥','吧':'巴','就':'蹴','要':'耍','能':'熊'
+};
+function hashOf(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry32(seed){return function(){seed|=0;seed=(seed+0x6D2B79F5)|0;var t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296}}
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
+function decorateText(text,rng,budget){
+  var pos=[];for(var i=0;i<text.length;i++)if(TYPO_MAP[text[i]])pos.push(i);
+  var chosen={},n=Math.min(budget,pos.length);
+  for(var k=0;k<n;k++){var p=Math.floor(rng()*pos.length);chosen[pos.splice(p,1)[0]]=true}
+  var frag=document.createDocumentFragment(),visible='',firstTypo=true;
+  for(var j=0;j<text.length;j++){
+    var ch=text[j];
+    if(chosen[j]){
+      var s=el('span','scribble');
+      s.appendChild(el('span',firstTypo||rng()<.6?'wrong':'inkblot',TYPO_MAP[ch]));
+      firstTypo=false;
+      s.appendChild(el('span','fix',ch));
+      frag.appendChild(s);visible+=TYPO_MAP[ch]+ch;
+    }else{frag.appendChild(document.createTextNode(ch));visible+=ch}
+  }
+  return {frag:frag,plain:visible};
+}
+function paginate(paras,per){
+  var pages=[];
+  for(var i=0;i<paras.length;i+=per)pages.push(paras.slice(i,i+per));
+  if(pages.length>1&&pages[pages.length-1].length===1&&pages[pages.length-1][0].trim()==='鲸鲸'){
+    pages[pages.length-2].push(pages.pop()[0]);
+  }
+  return pages;
+}
+function pad(x){return String(x).padStart(2,'0')}
+function stamp(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' · '+pad(d.getHours())+':'+pad(d.getMinutes())}
+var now=new Date(),sent=new Date(now.getTime()-4*3600*1000);
+document.getElementById('letterDate').textContent=stamp(now);
+document.getElementById('paperDate').textContent=stamp(now);
+document.getElementById('headSub').textContent='鲸鲸寄来的一封信 · 寄于 '+stamp(sent);
+document.getElementById('unreadBadge').textContent='1';
+document.getElementById('runtimeTag').textContent='信使醒着 · 不必远行';
+
+var list=document.getElementById('letterList');
+list.textContent='';
+[
+  {title:'鲸鲸寄来的一封信',when:stamp(now),done:true,active:true},
+  {title:'在路上 · 3 小时 12 分',when:stamp(sent)+' · 待送达',done:false,active:false},
+  {title:'在路上 · 6 小时 40 分',when:stamp(sent)+' · 待送达',done:false,active:false}
+].forEach(function(l){
+  var a=el('a','letter-item'+(l.done?' done':'')+(l.active?' active':''));
+  a.href='#';a.appendChild(el('span','mark'));
+  var t=el('span','txt');t.appendChild(el('span','ttl',l.title));t.appendChild(el('span','when',l.when));
+  a.appendChild(t);a.addEventListener('click',function(e){e.preventDefault()});list.appendChild(a);
+});
+
+var ink=document.getElementById('ink');
+var pages=paginate(TEXT,2),pageIndex=0;
+function renderPage(){
+  ink.textContent='';
+  var group=pages[pageIndex]||[];
+  var rng=mulberry32(hashOf('preview:'+pageIndex));
+  var budget=Math.max(1,Math.round(5/Math.max(1,pages.length)));
+  group.forEach(function(txt,i){
+    var d=decorateText(txt,rng,budget);
+    var p=el('p','ink-line'+(txt.trim()==='鲸鲸'?' sign-line':''));
+    p.dataset.text=d.plain;p.appendChild(d.frag);
+    p.style.animationDelay=(0.18+i*0.3).toFixed(2)+'s';
+    ink.appendChild(p);
+  });
+  document.getElementById('pageNum').textContent=(pageIndex+1)+' / '+pages.length;
+  document.getElementById('prevPage').disabled=pageIndex<=0;
+  document.getElementById('nextPage').disabled=pageIndex>=pages.length-1;
+}
+function turnTo(n){
+  if(n<0||n>=pages.length||n===pageIndex)return;
+  var paper=document.getElementById('paper');
+  paper.classList.add('turn-out');
+  setTimeout(function(){
+    pageIndex=n;renderPage();
+    paper.classList.remove('turn-out');paper.classList.add('turn-in');
+    setTimeout(function(){paper.classList.remove('turn-in')},560);
+  },420);
+}
+renderPage();
+document.getElementById('prevPage').addEventListener('click',function(){turnTo(pageIndex-1)});
+document.getElementById('nextPage').addEventListener('click',function(){turnTo(pageIndex+1)});
+
+var stage=document.getElementById('stage'),envelope=document.getElementById('envelope');
+function open(){
+  if(stage.classList.contains('pulled'))return;
+  envelope.classList.add('open');stage.classList.add('pulled');
+  setTimeout(function(){stage.classList.add('revealed')},900);
+}
+envelope.addEventListener('click',open);
+if(new URLSearchParams(location.search).has('open'))open();
+document.getElementById('replayBtn').addEventListener('click',function(){
+  pageIndex=0;renderPage();
+  stage.classList.remove('revealed','pulled');envelope.classList.remove('open');
+  Array.prototype.forEach.call(ink.querySelectorAll('p'),function(p){
+    p.style.animation='none';void p.offsetWidth;p.style.animation='';
+  });
+  setTimeout(open,560);
+});
+document.getElementById('saveBtn').addEventListener('click',function(){
+  var blob=new Blob([TEXT.join('\n\n')],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='鲸鲸的信.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+});
+document.getElementById('keepBtn').addEventListener('click',function(){this.textContent='已经收好';this.disabled=true});
+document.getElementById('instantLink').addEventListener('click',function(e){e.preventDefault();this.textContent='静态预览 · 无需生成'});
+
+</script>
+</body>
+</html>

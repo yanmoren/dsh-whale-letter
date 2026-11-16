@@ -1,0 +1,7 @@
+# dsh-whale-letter — DSH bundle patch
+# Host 半侧挂进 profile；浏览器半侧由 package.json 的 dsh.client 声明。
+# 安装（link: 方式不会把 2.4GB 模型复制到 C 盘）：
+#   dsh plugin --profile desktop add link:E:\临时文件\dsh-whale-letter
+- insert:
+    - id: dsh-whale-letter
+      name: dsh-whale-letter
